@@ -5,7 +5,7 @@ const _ = require("underscore");
 require("dotenv").config();
 
 const client = new MongoClient(process.env.DB_URI);
-const FIRST_INSCRIPTION_NUM = 348020; // $ordi deploy
+const FIRST_INSCRIPTION_NUM = 1232370; // 1 inscription before the penis.json test
 const ORD_URL = "https://turbo.ordinalswallet.com";
 
 const fetchContent = async (id) => {
@@ -23,7 +23,7 @@ const index = async () => {
   const inscriptions = database.collection("inscriptions");
 
   const cursor = await inscriptions.find({
-    brc20: { $exists: false },
+    penis: { $exists: false },
     content_type: { $in: ["text/plain;charset=utf-8", "application/json"] },
     num: { $gte: FIRST_INSCRIPTION_NUM },
   });
@@ -36,19 +36,17 @@ const index = async () => {
     const content = await fetchContent(item.id);
     const metadata = await fetchMetadata(item.id);
 
-    let brc20 = false;
+    let penis = false;
 
-    if (typeof content === "object" && content.p === "brc-20") {
-      brc20 = true;
+    if (typeof content === "object" && content.p === "penis") {
+      penis = true;
 
-      if (content.op === "transfer" || content.op === "mint") {
-        content.amount = parseInt(content.amt, 10);
-      }
+      await inscriptions.updateOne(
+        { _id: item._id },
+        { $set: { content, metadata, penis } }
+      );
+
     }
-    await inscriptions.updateOne(
-      { _id: item._id },
-      { $set: { content, metadata, brc20 } }
-    );
   }
 
   process.exit();
