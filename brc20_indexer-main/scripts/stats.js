@@ -7,6 +7,23 @@ require("dotenv").config();
 
 const client = new MongoClient(process.env.DB_URI);
 
+
+// look at the index for every instance of penis without key:value of 25x: done.
+// when there is 25 results with content-type png, jpg, or webp, then...
+// for each one, download it's image file into a folder.
+
+
+// NEXT
+// do all image processing
+
+// NEXT 
+// yeet to blockchain 
+
+// NEXT
+// upon verification, update the index 
+
+
+
 const stats = async (tick) => {
   const validInsctipitons = await getValidInscriptions(client, tick);
   const content = validInsctipitons.map((i) => ({
