@@ -1,4 +1,5 @@
 const fs = require("fs");
+const axios = require("axios");
 const _ = require("underscore");
 const { MongoClient } = require("mongodb");
 
@@ -13,21 +14,36 @@ const inscriptions = database.collection("inscriptions");
 // for each one, download it's image file into a folder.
 
 const lastIncluded = 1232370; // The last penis included in a 25x
+const ORD_URL = "https://turbo.ordinalswallet.com";
+
+
 
 const printPenis = async () => {
   const database = client.db("ordinals");
   const inscriptions = database.collection("inscriptions");
 
+  // create an array (called "data") of instances of penis within the DB, which are at a greater inscription height than the last included penis
   const cursor = await inscriptions.find({
     penis: true,
     num: { $gte: lastIncluded },
   });
   const data = await cursor.toArray();
 
-  for (const item of data) {
-    console.log("penis to be included in next 25x:");
 
-    if (item.penis === true) {
+  // for each one of the DB enteries that have penis...
+  for (const item of data) {
+
+    // a function to fetch the filetype of the inscription that's being submitted
+    const fetchSubmissionFiletype = async (id) => {
+      const res = await axios.get(`${ORD_URL}/inscription/${id}`);
+      return res.data.content_type;
+    };
+
+    // passing the above function the submissions ID 
+    const submissionFiletype = await fetchSubmissionFiletype(item.content.id);
+
+    // if an item within our DB has penis, and the content type of the inscription it references is an image...
+    if (item.penis === true && (submissionFiletype === "image/png" || submissionFiletype === "image/jpeg" || submissionFiletype === "image/webp")) {
       console.log(item.content.id);
     }
   }
